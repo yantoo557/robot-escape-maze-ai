@@ -702,7 +702,7 @@ if (nearestCrystal) {
     <div className="container">
 
       <h1>
-        🤖 ROBOT ESCAPE MAZE
+        🤖 Misi Pelarian Robot
       </h1>
 
       <p className="subtitle">
