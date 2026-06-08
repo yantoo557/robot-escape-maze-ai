@@ -9,13 +9,15 @@ function App() {
   const ROWS = 15;
   const COLS = 15;
 
-  const INITIAL_CRYSTALS = [
+  const START = {
+    row: 0,
+    col: 0
+  };
 
-    { row: 2, col: 12 },
-    { row: 7, col: 8 },
-    { row: 10, col: 3 }
-
-  ];
+  const GOAL = {
+    row: 14,
+    col: 14
+  };
 
   const createMaze = () => {
 
@@ -36,12 +38,23 @@ function App() {
       }
 
       maze.push(row);
+
     }
 
-    maze[0][0] = "path";
-    maze[14][14] = "goal";
+    maze[
+      START.row
+    ][
+      START.col
+    ] = "path";
+
+    maze[
+      GOAL.row
+    ][
+      GOAL.col
+    ] = "goal";
 
     return maze;
+
   };
 
   const createValidMaze = () => {
@@ -55,116 +68,338 @@ function App() {
 
       path = findPath(
         maze,
-        { row: 0, col: 0 },
-        { row: 14, col: 14 }
+        START,
+        GOAL
       );
 
-    } while (path.length === 0);
+    } while (
+      path.length === 0
+    );
 
     return maze;
+
   };
 
+const generateCrystals = (maze) => {
+
+  const crystals = [];
+
+  while (crystals.length < 3) {
+
+    const row =
+      Math.floor(Math.random() * 15);
+
+    const col =
+      Math.floor(Math.random() * 15);
+
+    if (
+      maze[row][col] !== "path"
+    ) continue;
+
+    if (
+      row === 0 &&
+      col === 0
+    ) continue;
+
+    if (
+      row === 14 &&
+      col === 14
+    ) continue;
+
+    const reachable =
+      findPath(
+        maze,
+        { row: 0, col: 0 },
+        { row, col }
+      );
+
+    if (
+      reachable.length === 0
+    ) continue;
+
+    const exists =
+      crystals.some(
+        crystal =>
+          crystal.row === row &&
+          crystal.col === col
+      );
+
+    if (!exists) {
+
+      crystals.push({
+        row,
+        col
+      });
+
+    }
+  }
+
+  return crystals;
+};
+
+  const initialMaze =
+    createValidMaze();
+
   const [maze, setMaze] =
-    useState(createValidMaze());
+    useState(
+      initialMaze
+    );
 
-  const [robotPos, setRobotPos] =
-    useState({
-      row: 0,
-      col: 0
-    });
-
-  const [crystals] =
-    useState(INITIAL_CRYSTALS);
+  const [
+    crystals,
+    setCrystals
+  ] = useState(
+    generateCrystals(
+      initialMaze
+    )
+  );
 
   const [
     collectedCrystals,
     setCollectedCrystals
   ] = useState([]);
 
-  const [status, setStatus] =
-    useState(
-      "Menunggu perintah..."
-    );
+  const [
+    robotPos,
+    setRobotPos
+  ] = useState(
+    START
+  );
 
-  const [isMoving, setIsMoving] =
-    useState(false);
+  const [
+    status,
+    setStatus
+  ] = useState(
+    "Siap memulai misi"
+  );
 
-  const [portalUnlocked,
+  const [
+    portalUnlocked,
     setPortalUnlocked
   ] = useState(false);
 
-    const generateMaze = () => {
-
-    setRobotPos({
-      row: 0,
-      col: 0
-    });
-
-    setCollectedCrystals([]);
-
-    setPortalUnlocked(false);
-
-    setStatus(
-      "Labirin baru dibuat"
-    );
-
-    setMaze(
-      createValidMaze()
-    );
-  };
-
-    const collectCrystal = (
-    row,
-    col
+  const [
+    isMoving,
+    setIsMoving
+  ] = useState(false);
+  
+    const resetRoutes = (
+    currentMaze
   ) => {
 
-    const crystal =
-      crystals.find(
+    return currentMaze.map(
+      row =>
 
-        c =>
-          c.row === row &&
-          c.col === col
+        row.map(
+          cell =>
 
-      );
-
-    if (!crystal)
-      return;
-
-    const alreadyCollected =
-      collectedCrystals.some(
-
-        c =>
-          c.row === row &&
-          c.col === col
-
-      );
-
-    if (alreadyCollected)
-      return;
-
-    const updated = [
-
-      ...collectedCrystals,
-      crystal
-
-    ];
-
-    setCollectedCrystals(
-      updated
+            cell === "route"
+              ? "path"
+              : cell
+        )
     );
 
-    if (
-      updated.length ===
-      crystals.length
-    ) {
+  };
 
-      setPortalUnlocked(true);
+const generateMaze = () => {
 
-      setStatus(
-        "Portal berhasil dibuka!"
+  const newMaze =
+    createValidMaze();
+
+  const newCrystals =
+    generateCrystals(
+      newMaze
+    );
+
+  setMaze(newMaze);
+
+  setCrystals(
+    newCrystals
+  );
+
+  setCollectedCrystals(
+    []
+  );
+
+  setPortalUnlocked(
+    false
+  );
+
+  setRobotPos({
+    row: 0,
+    col: 0
+  });
+
+  setStatus(
+    "Labirin baru dibuat"
+  );
+
+};
+
+  const collectCrystal = (
+  row,
+  col
+) => {
+
+  const crystal =
+    crystals.find(
+
+      c =>
+
+        c.row === row &&
+        c.col === col
+
+    );
+
+  if (!crystal)
+    return;
+
+  const alreadyCollected =
+    collectedCrystals.some(
+
+      c =>
+
+        c.row === row &&
+        c.col === col
+
+    );
+
+  if (
+    alreadyCollected
+  ) {
+    return;
+  }
+
+  const updated = [
+
+    ...collectedCrystals,
+    crystal
+
+  ];
+
+  setCollectedCrystals(
+    updated
+  );
+
+  if (
+    updated.length >=
+    crystals.length
+  ) {
+
+    setPortalUnlocked(
+      true
+    );
+
+    setStatus(
+      "Portal berhasil dibuka!"
+    );
+
+  }
+
+};
+
+  const getNextTarget =
+    () => {
+
+const remainingCrystals =
+  crystals.filter(
+
+    crystal =>
+
+      !collectedCrystals.some(
+
+        collected =>
+
+          collected.row === crystal.row &&
+          collected.col === crystal.col
+
+      )
+
+  );
+
+  let nearestCrystal = null;
+let shortestDistance = Infinity;
+
+remainingCrystals.forEach(
+  crystal => {
+
+    const distance =
+
+      Math.abs(
+        crystal.row -
+        robotPos.row
+      ) +
+
+      Math.abs(
+        crystal.col -
+        robotPos.col
       );
 
+    if (
+      distance <
+      shortestDistance
+    ) {
+
+      shortestDistance =
+        distance;
+
+      nearestCrystal =
+        crystal;
+
     }
+
+  }
+);
+
+target = {
+
+  row:
+    nearestCrystal.row,
+
+  col:
+    nearestCrystal.col
+
+};
+
+    if (
+      remainingCrystal
+    ) {
+
+      return {
+
+        row:
+          remainingCrystal.row,
+
+        col:
+          remainingCrystal.col,
+
+        type:
+          "crystal"
+
+      };
+
+    }
+
+    if (
+      portalUnlocked
+    ) {
+
+      return {
+
+        row:
+          GOAL.row,
+
+        col:
+          GOAL.col,
+
+        type:
+          "portal"
+
+      };
+
+    }
+
+    return null;
 
   };
 
@@ -184,11 +419,19 @@ function App() {
 
         setIsMoving(false);
 
-        setStatus(
-          "Perjalanan selesai"
-        );
+setStatus(
+  "Target tercapai"
+);
 
-        return;
+setTimeout(() => {
+
+  setStatus(
+    "Klik Cari Jalur AI"
+  );
+
+}, 500);
+
+return;
       }
 
       const current =
@@ -213,6 +456,12 @@ function App() {
   };
 
   const searchPath = () => {
+    console.log(
+  "Robot sekarang:",
+  robotPos
+);
+
+if (isMoving) return;
 
     setStatus(
       "AI sedang menghitung jalur..."
@@ -220,31 +469,63 @@ function App() {
 
     let target;
 
-    const remainingCrystal =
-      crystals.find(
+const remainingCrystals =
+  crystals.filter(
 
-        crystal =>
+    crystal =>
 
-          !collectedCrystals.some(
+      !collectedCrystals.some(
 
-            collected =>
+        collected =>
 
-              collected.row === crystal.row &&
-              collected.col === crystal.col
+          collected.row === crystal.row &&
+          collected.col === crystal.col
 
-          )
+      )
 
+  );
+
+let nearestCrystal = null;
+let shortestPath = Infinity;
+
+remainingCrystals.forEach(
+  crystal => {
+
+    const testPath =
+      findPath(
+        maze,
+        robotPos,
+        {
+          row: crystal.row,
+          col: crystal.col
+        }
       );
 
-    if (remainingCrystal) {
+    if (
+      testPath.length > 0 &&
+      testPath.length < shortestPath
+    ) {
+
+      shortestPath =
+        testPath.length;
+
+      nearestCrystal =
+        crystal;
+
+    }
+
+  }
+);
+
+if (nearestCrystal) {
 
       target = {
 
         row:
-          remainingCrystal.row,
+          nearestCrystal.row,
 
         col:
-          remainingCrystal.col
+          nearestCrystal.col
 
       };
 
@@ -334,87 +615,87 @@ function App() {
 
   useEffect(() => {
 
-    const interval =
-      setInterval(() => {
+  const interval =
+    setInterval(() => {
 
-        setMaze(oldMaze => {
+      setMaze(oldMaze => {
 
-          const newMaze =
-            oldMaze.map(
-              row => [...row]
+        const newMaze =
+          oldMaze.map(
+            row => [...row]
+          );
+
+        for (
+          let i = 0;
+          i < 2;
+          i++
+        ) {
+
+          const r =
+            Math.floor(
+              Math.random() * 15
             );
 
-          for (
-            let i = 0;
-            i < 4;
-            i++
+          const c =
+            Math.floor(
+              Math.random() * 15
+            );
+
+          if (
+            r === robotPos.row &&
+            c === robotPos.col
+          ) continue;
+
+          if (
+            Math.abs(r - 14) <= 1 &&
+            Math.abs(c - 14) <= 1
+          ) continue;
+
+          const isCrystal =
+            crystals.some(
+
+              crystal =>
+
+                crystal.row === r &&
+                crystal.col === c
+
+            );
+
+          if (isCrystal)
+            continue;
+
+          if (
+            newMaze[r][c] ===
+            "wall"
           ) {
 
-            const r =
-              Math.floor(
-                Math.random() * 15
-              );
+            newMaze[r][c] =
+              "path";
 
-            const c =
-              Math.floor(
-                Math.random() * 15
-              );
+          } else {
 
-            if (
-              r === robotPos.row &&
-              c === robotPos.col
-            ) continue;
-
-            if (
-              r === 14 &&
-              c === 14
-            ) continue;
-
-            const isCrystal =
-              crystals.some(
-
-                crystal =>
-
-                  crystal.row === r &&
-                  crystal.col === c
-
-              );
-
-            if (isCrystal)
-              continue;
-
-            if (
-              newMaze[r][c] ===
-              "wall"
-            ) {
-
-              newMaze[r][c] =
-                "path";
-
-            } else {
-
-              newMaze[r][c] =
-                "wall";
-
-            }
+            newMaze[r][c] =
+              "wall";
 
           }
 
-          return newMaze;
+        }
 
-        });
+        return newMaze;
 
-      }, 5000);
+      });
 
-    return () =>
-      clearInterval(
-        interval
-      );
+    }, 5000);
 
-  }, [
-    robotPos,
-    crystals
-  ]);
+  return () =>
+    clearInterval(
+      interval
+    );
+
+}, [
+  robotPos,
+  crystals
+]);
 
     return (
 
@@ -446,85 +727,77 @@ function App() {
 
       </div>
 
-      <div className="status-panel">
+      <div className="info-panels">
 
-        <h3>AI STATUS</h3>
+  <div className="status-panel">
 
-        <p>
-          {status}
-        </p>
+    <h3>AI STATUS</h3>
 
-        <p>
-          Position :
-          ({robotPos.row},
-          {robotPos.col})
-        </p>
+    <p>{status}</p>
 
-        <p>
-          Crystal :
-          {collectedCrystals.length}
-          /
-          {crystals.length}
-        </p>
+    <p>
+      Position :
+      ({robotPos.row},
+      {robotPos.col})
+    </p>
 
-        <p>
+    <p>
+      Crystal :
+      {collectedCrystals.length}
+      /
+      {crystals.length}
+    </p>
 
-          Portal :
+    <p>
+      Portal :
+      {
+        portalUnlocked
+          ? " 🟢 UNLOCKED"
+          : " 🔴 LOCKED"
+      }
+    </p>
 
-          {
-            portalUnlocked
-              ? " 🟢 UNLOCKED"
-              : " 🔴 LOCKED"
-          }
+  </div>
 
-        </p>
+  <div className="crystal-panel">
 
-      </div>
+    <h3>ENERGY CRYSTAL</h3>
 
-      <div className="crystal-panel">
+    {
+      crystals.map(
+        (crystal,index)=>{
 
-        <h3>
-          ENERGY CRYSTAL
-        </h3>
+          const collected =
+            collectedCrystals.some(
+              c =>
+                c.row === crystal.row &&
+                c.col === crystal.col
+            );
 
-        {
+          return (
 
-          crystals.map(
-            (crystal, index) => {
+            <p key={index}>
 
-              const collected =
-                collectedCrystals.some(
+              {
+                collected
+                  ? "✅"
+                  : "⬜"
+              }
 
-                  c =>
+              {" "}
+              Crystal {index+1}
 
-                    c.row === crystal.row &&
-                    c.col === crystal.col
+            </p>
 
-                );
-
-              return (
-
-                <p key={index}>
-
-                  {
-                    collected
-                      ? "✅"
-                      : "⬜"
-                  }
-
-                  {" "}
-                  Crystal {index + 1}
-
-                </p>
-
-              );
-
-            }
-          )
+          );
 
         }
+      )
+    }
 
-      </div>
+  </div>
+
+</div>
 
       <Maze
 

@@ -88,25 +88,21 @@ h1{
   0 0 30px #00f5d4;
 }
 
-.status-panel{
+.status-panel,
+.crystal-panel{
 
-  width:320px;
+  width:300px;
 
-  margin:20px auto;
+  background:rgba(255,255,255,0.05);
 
-  padding:15px;
+  border:1px solid rgba(255,255,255,0.1);
 
-  border-radius:15px;
+  border-radius:20px;
 
-  background:
-  rgba(255,255,255,0.05);
+  padding:20px;
 
   backdrop-filter:blur(10px);
 
-  border:
-  1px solid rgba(255,255,255,0.1);
-
-  text-align:left;
 }
 
 .status-panel h3{
@@ -272,4 +268,12 @@ h1{
     box-shadow:
     0 0 10px #f59e0b;
   }
+}
+
+.info-panels{
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-bottom:25px;
+  flex-wrap:wrap;
 }
