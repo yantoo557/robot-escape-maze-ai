@@ -715,7 +715,7 @@ if (nearestCrystal) {
           className="btn"
           onClick={generateMaze}
         >
-          Generate Maze
+          Buat Labirin
         </button>
 
         <button
