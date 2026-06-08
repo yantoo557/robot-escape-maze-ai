@@ -706,7 +706,7 @@ if (nearestCrystal) {
       </h1>
 
       <p className="subtitle">
-        AI Facility Escape - A* Dynamic Pathfinding
+        Sistem Navigasi Robot Cerdas pada Labirin Dinamis
       </p>
 
       <div className="control-panel">
