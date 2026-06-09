@@ -929,7 +929,7 @@ collectCrystal(
     >
 
       <h1>
-        🎉 YOU WIN
+         YOU WIN
       </h1>
 
       <button
