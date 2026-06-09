@@ -442,13 +442,7 @@ return;
       const current =
         path[step];
 
-       
-
-      collectCrystal(
-        current.row,
-        current.col
-      );
-
+      
       step++;
 
     }, 250);
