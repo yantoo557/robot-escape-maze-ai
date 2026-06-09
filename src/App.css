@@ -329,3 +329,9 @@ h1{
     0 0 40px #00ff99;
 
 }
+
+body{
+
+  overflow-x:hidden;
+
+}

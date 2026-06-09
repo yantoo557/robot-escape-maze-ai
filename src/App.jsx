@@ -703,6 +703,17 @@ if (nearestCrystal) {
     (e) => {
 
       if (
+  e.key === "ArrowUp" ||
+  e.key === "ArrowDown" ||
+  e.key === "ArrowLeft" ||
+  e.key === "ArrowRight"
+) {
+
+  e.preventDefault();
+
+}
+
+      if (
         !gameStarted ||
         gameOver
       ) return;
