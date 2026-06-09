@@ -408,47 +408,6 @@ target = {
 
   };
 
-    const animateRobot = (path) => {
-
-    if (isMoving) return;
-
-    setIsMoving(true);
-
-    let step = 0;
-
-    const interval = setInterval(() => {
-
-      if (step >= path.length) {
-
-        clearInterval(interval);
-
-        setIsMoving(false);
-
-setStatus(
-  "Target tercapai"
-);
-
-setTimeout(() => {
-
-  setStatus(
-    "Klik Cari Jalur AI"
-  );
-
-}, 500);
-
-return;
-      }
-
-      const current =
-        path[step];
-
-      
-      step++;
-
-    }, 250);
-
-  };
-
   const searchPath = () => {
     console.log(
   "Robot sekarang:",
@@ -603,7 +562,7 @@ if (nearestCrystal) {
 
     setMaze(newMaze);
 
-    animateRobot(path);
+   
 
   };
 
