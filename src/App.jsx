@@ -182,6 +182,17 @@ const generateCrystals = (maze) => {
     isMoving,
     setIsMoving
   ] = useState(false);
+
+  const [gameStarted, setGameStarted] =
+  useState(false);
+
+const [gameOver, setGameOver] =
+  useState(false);
+
+  const [
+  gameWin,
+  setGameWin
+] = useState(false);
   
     const resetRoutes = (
     currentMaze
@@ -202,7 +213,7 @@ const generateCrystals = (maze) => {
   };
 
 const generateMaze = () => {
-
+  
   const newMaze =
     createValidMaze();
 
@@ -225,6 +236,10 @@ const generateMaze = () => {
     false
   );
 
+  setGameOver(false);
+
+setGameWin(false);
+
   setRobotPos({
     row: 0,
     col: 0
@@ -236,19 +251,17 @@ const generateMaze = () => {
 
 };
 
-  const collectCrystal = (
+const collectCrystal = (
   row,
   col
 ) => {
 
   const crystal =
     crystals.find(
-
       c =>
-
         c.row === row &&
         c.col === col
-
+        
     );
 
   if (!crystal)
@@ -256,25 +269,17 @@ const generateMaze = () => {
 
   const alreadyCollected =
     collectedCrystals.some(
-
       c =>
-
         c.row === row &&
         c.col === col
-
     );
 
-  if (
-    alreadyCollected
-  ) {
+  if (alreadyCollected)
     return;
-  }
 
   const updated = [
-
     ...collectedCrystals,
     crystal
-
   ];
 
   setCollectedCrystals(
@@ -282,7 +287,7 @@ const generateMaze = () => {
   );
 
   if (
-    updated.length >=
+    updated.length ===
     crystals.length
   ) {
 
@@ -437,12 +442,7 @@ return;
       const current =
         path[step];
 
-      setRobotPos({
-
-        row: current.row,
-        col: current.col
-
-      });
+       
 
       collectCrystal(
         current.row,
@@ -695,8 +695,128 @@ if (nearestCrystal) {
 }, [
   robotPos,
   crystals
-]);
+]); 
 
+    useEffect(() => {
+
+  const handleKeyDown =
+    (e) => {
+
+      if (
+        !gameStarted ||
+        gameOver
+      ) return;
+
+      let row =
+        robotPos.row;
+
+      let col =
+        robotPos.col;
+
+      switch (e.key) {
+
+        case "ArrowUp":
+          row--;
+          break;
+
+        case "ArrowDown":
+          row++;
+          break;
+
+        case "ArrowLeft":
+          col--;
+          break;
+
+        case "ArrowRight":
+          col++;
+          break;
+
+        default:
+          return;
+
+      }
+
+      if (
+        row < 0 ||
+        col < 0 ||
+        row >= ROWS ||
+        col >= COLS
+      ) return;
+
+      if (
+        maze[row][col] ===
+        "wall"
+      ) {
+
+        setGameOver(true);
+
+        setStatus(
+          "GAME OVER"
+        );
+
+        return;
+
+      }
+
+      setRobotPos({
+        row,
+        col
+      });
+
+      if (
+  row === GOAL.row &&
+  col === GOAL.col
+) {
+
+  if (!portalUnlocked) {
+
+    setStatus(
+      "Kumpulkan 3 crystal terlebih dahulu!"
+    );
+
+    return;
+
+  }
+
+  setGameWin(true);
+
+  setStatus(
+    "MISI BERHASIL!"
+  );
+
+  return;
+
+}
+
+setRobotPos({
+  row,
+  col
+});
+
+collectCrystal(
+  row,
+  col
+);
+
+    };
+
+  window.addEventListener(
+    "keydown",
+    handleKeyDown
+  );
+
+  return () =>
+    window.removeEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+}, [
+  robotPos,
+  gameStarted,
+  gameOver,
+  maze
+]);
     return (
 
     <div className="container">
@@ -724,6 +844,15 @@ if (nearestCrystal) {
         >
           Cari Jalur AI
         </button>
+
+        <button
+  className="btn"
+  onClick={() =>
+    setGameStarted(true)
+  }
+>
+  Mulai Game
+</button>
 
       </div>
 
@@ -798,7 +927,60 @@ if (nearestCrystal) {
   </div>
 
 </div>
+      {
+  gameOver && (
 
+    <div
+      className="game-over"
+    >
+
+      <h1>
+        GAME OVER
+      </h1>
+
+      <button
+        className="btn"
+        onClick={() => {
+
+          setGameOver(
+            false
+          );
+
+          generateMaze();
+
+        }}
+      >
+        RESTART GAME
+      </button>
+
+    </div>
+
+  )
+}
+      {
+  gameWin && (
+
+    <div
+      className="game-win"
+    >
+
+      <h1>
+        🎉 YOU WIN
+      </h1>
+
+      <button
+        className="btn"
+        onClick={
+          generateMaze
+        }
+      >
+        MAIN LAGI
+      </button>
+
+    </div>
+
+  )
+}
       <Maze
 
         maze={maze}
