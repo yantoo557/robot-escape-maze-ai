@@ -6,8 +6,8 @@ import { findPath } from "./algorithms/astar";
 
 function App() {
 
-  const ROWS = 15;
-  const COLS = 15;
+  const ROWS = 12;
+  const COLS = 12;
 
   const START = {
     row: 0,
