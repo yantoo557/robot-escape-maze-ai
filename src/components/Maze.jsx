@@ -76,7 +76,7 @@ function Maze({
               {!isRobot &&
                 !crystal &&
                 cell === "route" &&
-                "⚡"}
+                ""}
 
             </div>
 

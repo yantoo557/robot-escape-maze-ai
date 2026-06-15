@@ -5,680 +5,344 @@ import Maze from "./components/Maze";
 import { findPath } from "./algorithms/astar";
 
 function App() {
-
   const ROWS = 15;
   const COLS = 15;
 
   const START = {
     row: 0,
-    col: 0
+    col: 0,
   };
 
   const GOAL = {
     row: 14,
-    col: 14
+    col: 14,
   };
 
   const createMaze = () => {
-
     const maze = [];
 
     for (let r = 0; r < ROWS; r++) {
-
       const row = [];
 
       for (let c = 0; c < COLS; c++) {
-
-        row.push(
-          Math.random() < 0.20
-            ? "wall"
-            : "path"
-        );
-
+        row.push(Math.random() < 0.2 ? "wall" : "path");
       }
 
       maze.push(row);
-
     }
 
-    maze[
-      START.row
-    ][
-      START.col
-    ] = "path";
+    maze[START.row][START.col] = "path";
 
-    maze[
-      GOAL.row
-    ][
-      GOAL.col
-    ] = "goal";
+    maze[GOAL.row][GOAL.col] = "goal";
 
     return maze;
-
   };
 
   const createValidMaze = () => {
-
     let maze;
     let path;
 
     do {
-
       maze = createMaze();
 
-      path = findPath(
-        maze,
-        START,
-        GOAL
-      );
-
-    } while (
-      path.length === 0
-    );
+      path = findPath(maze, START, GOAL);
+    } while (path.length === 0);
 
     return maze;
-
   };
 
-const generateCrystals = (maze) => {
+  const generateCrystals = (maze) => {
+    const crystals = [];
 
-  const crystals = [];
+    while (crystals.length < 3) {
+      const row = Math.floor(Math.random() * 15);
 
-  while (crystals.length < 3) {
+      const col = Math.floor(Math.random() * 15);
 
-    const row =
-      Math.floor(Math.random() * 15);
+      if (maze[row][col] !== "path") continue;
 
-    const col =
-      Math.floor(Math.random() * 15);
+      if (row === 0 && col === 0) continue;
 
-    if (
-      maze[row][col] !== "path"
-    ) continue;
+      if (row === 14 && col === 14) continue;
 
-    if (
-      row === 0 &&
-      col === 0
-    ) continue;
+      const reachable = findPath(maze, { row: 0, col: 0 }, { row, col });
 
-    if (
-      row === 14 &&
-      col === 14
-    ) continue;
+      if (reachable.length === 0) continue;
 
-    const reachable =
-      findPath(
-        maze,
-        { row: 0, col: 0 },
-        { row, col }
+      const exists = crystals.some(
+        (crystal) => crystal.row === row && crystal.col === col,
       );
 
-    if (
-      reachable.length === 0
-    ) continue;
-
-    const exists =
-      crystals.some(
-        crystal =>
-          crystal.row === row &&
-          crystal.col === col
-      );
-
-    if (!exists) {
-
-      crystals.push({
-        row,
-        col
-      });
-
+      if (!exists) {
+        crystals.push({
+          row,
+          col,
+        });
+      }
     }
-  }
 
-  return crystals;
-};
-
-  const initialMaze =
-    createValidMaze();
-
-  const [maze, setMaze] =
-    useState(
-      initialMaze
-    );
-
-  const [
-    crystals,
-    setCrystals
-  ] = useState(
-    generateCrystals(
-      initialMaze
-    )
-  );
-
-  const [
-    collectedCrystals,
-    setCollectedCrystals
-  ] = useState([]);
-
-  const [
-    robotPos,
-    setRobotPos
-  ] = useState(
-    START
-  );
-
-  const [
-    status,
-    setStatus
-  ] = useState(
-    "Siap memulai misi"
-  );
-
-  const [
-    portalUnlocked,
-    setPortalUnlocked
-  ] = useState(false);
-
-  const [
-    isMoving,
-    setIsMoving
-  ] = useState(false);
-
-  const [gameStarted, setGameStarted] =
-  useState(false);
-
-const [gameOver, setGameOver] =
-  useState(false);
-
-  const [
-  gameWin,
-  setGameWin
-] = useState(false);
-  
-    const resetRoutes = (
-    currentMaze
-  ) => {
-
-    return currentMaze.map(
-      row =>
-
-        row.map(
-          cell =>
-
-            cell === "route"
-              ? "path"
-              : cell
-        )
-    );
-
+    return crystals;
   };
 
-const generateMaze = () => {
-  
-  const newMaze =
-    createValidMaze();
+  const initialMaze = createValidMaze();
 
-  const newCrystals =
-    generateCrystals(
-      newMaze
+  const [maze, setMaze] = useState(initialMaze);
+
+  const [crystals, setCrystals] = useState(generateCrystals(initialMaze));
+
+  const [collectedCrystals, setCollectedCrystals] = useState([]);
+
+  const [robotPos, setRobotPos] = useState(START);
+
+  const [status, setStatus] = useState("Siap memulai misi");
+
+  const [portalUnlocked, setPortalUnlocked] = useState(false);
+
+  const [isMoving, setIsMoving] = useState(false);
+
+  const [gameStarted, setGameStarted] = useState(false);
+
+  const [gameOver, setGameOver] = useState(false);
+
+  const [gameWin, setGameWin] = useState(false);
+
+  const resetRoutes = (currentMaze) => {
+    return currentMaze.map((row) =>
+      row.map((cell) => (cell === "route" ? "path" : cell)),
+    );
+  };
+
+  const generateMaze = () => {
+    const newMaze = createValidMaze();
+
+    const newCrystals = generateCrystals(newMaze);
+
+    setMaze(newMaze);
+
+    setCrystals(newCrystals);
+
+    setCollectedCrystals([]);
+
+    setPortalUnlocked(false);
+
+    setGameOver(false);
+
+    setGameWin(false);
+
+    setRobotPos({
+      row: 0,
+      col: 0,
+    });
+
+    setStatus("Labirin baru dibuat");
+  };
+
+  const collectCrystal = (row, col) => {
+    const crystal = crystals.find((c) => c.row === row && c.col === col);
+
+    if (!crystal) return;
+
+    const alreadyCollected = collectedCrystals.some(
+      (c) => c.row === row && c.col === col,
     );
 
-  setMaze(newMaze);
+    if (alreadyCollected) return;
 
-  setCrystals(
-    newCrystals
-  );
+    const updated = [...collectedCrystals, crystal];
 
-  setCollectedCrystals(
-    []
-  );
+    setCollectedCrystals(updated);
 
-  setPortalUnlocked(
-    false
-  );
+    if (updated.length === crystals.length) {
+      setPortalUnlocked(true);
 
-  setGameOver(false);
+      setStatus("Portal berhasil dibuka!");
+    }
+  };
 
-setGameWin(false);
-
-  setRobotPos({
-    row: 0,
-    col: 0
-  });
-
-  setStatus(
-    "Labirin baru dibuat"
-  );
-
-};
-
-const collectCrystal = (
-  row,
-  col
-) => {
-
-  const crystal =
-    crystals.find(
-      c =>
-        c.row === row &&
-        c.col === col
-        
+  const getNextTarget = () => {
+    const remainingCrystals = crystals.filter(
+      (crystal) =>
+        !collectedCrystals.some(
+          (collected) =>
+            collected.row === crystal.row && collected.col === crystal.col,
+        ),
     );
 
-  if (!crystal)
-    return;
+    let nearestCrystal = null;
+    let shortestDistance = Infinity;
 
-  const alreadyCollected =
-    collectedCrystals.some(
-      c =>
-        c.row === row &&
-        c.col === col
-    );
+    remainingCrystals.forEach((crystal) => {
+      const distance =
+        Math.abs(crystal.row - robotPos.row) +
+        Math.abs(crystal.col - robotPos.col);
 
-  if (alreadyCollected)
-    return;
+      if (distance < shortestDistance) {
+        shortestDistance = distance;
 
-  const updated = [
-    ...collectedCrystals,
-    crystal
-  ];
+        nearestCrystal = crystal;
+      }
+    });
 
-  setCollectedCrystals(
-    updated
-  );
+    target = {
+      row: nearestCrystal.row,
 
-  if (
-    updated.length ===
-    crystals.length
-  ) {
+      col: nearestCrystal.col,
+    };
 
-    setPortalUnlocked(
-      true
-    );
+    if (remainingCrystal) {
+      return {
+        row: remainingCrystal.row,
 
-    setStatus(
-      "Portal berhasil dibuka!"
-    );
+        col: remainingCrystal.col,
 
-  }
-
-};
-
-  const getNextTarget =
-    () => {
-
-const remainingCrystals =
-  crystals.filter(
-
-    crystal =>
-
-      !collectedCrystals.some(
-
-        collected =>
-
-          collected.row === crystal.row &&
-          collected.col === crystal.col
-
-      )
-
-  );
-
-  let nearestCrystal = null;
-let shortestDistance = Infinity;
-
-remainingCrystals.forEach(
-  crystal => {
-
-    const distance =
-
-      Math.abs(
-        crystal.row -
-        robotPos.row
-      ) +
-
-      Math.abs(
-        crystal.col -
-        robotPos.col
-      );
-
-    if (
-      distance <
-      shortestDistance
-    ) {
-
-      shortestDistance =
-        distance;
-
-      nearestCrystal =
-        crystal;
-
+        type: "crystal",
+      };
     }
 
-  }
-);
-
-target = {
-
-  row:
-    nearestCrystal.row,
-
-  col:
-    nearestCrystal.col
-
-};
-
-    if (
-      remainingCrystal
-    ) {
-
+    if (portalUnlocked) {
       return {
+        row: GOAL.row,
 
-        row:
-          remainingCrystal.row,
+        col: GOAL.col,
 
-        col:
-          remainingCrystal.col,
-
-        type:
-          "crystal"
-
+        type: "portal",
       };
-
-    }
-
-    if (
-      portalUnlocked
-    ) {
-
-      return {
-
-        row:
-          GOAL.row,
-
-        col:
-          GOAL.col,
-
-        type:
-          "portal"
-
-      };
-
     }
 
     return null;
-
   };
 
   const searchPath = () => {
-    console.log(
-  "Robot sekarang:",
-  robotPos
-);
+    console.log("Robot sekarang:", robotPos);
 
-if (isMoving) return;
+    if (isMoving) return;
 
-    setStatus(
-      "AI sedang menghitung jalur..."
-    );
+    setStatus("AI sedang menghitung jalur...");
 
     let target;
 
-const remainingCrystals =
-  crystals.filter(
+    const remainingCrystals = crystals.filter(
+      (crystal) =>
+        !collectedCrystals.some(
+          (collected) =>
+            collected.row === crystal.row && collected.col === crystal.col,
+        ),
+    );
 
-    crystal =>
+    let nearestCrystal = null;
+    let shortestPath = Infinity;
 
-      !collectedCrystals.some(
+    remainingCrystals.forEach((crystal) => {
+      const testPath = findPath(maze, robotPos, {
+        row: crystal.row,
+        col: crystal.col,
+      });
 
-        collected =>
+      if (testPath.length > 0 && testPath.length < shortestPath) {
+        shortestPath = testPath.length;
 
-          collected.row === crystal.row &&
-          collected.col === crystal.col
+        nearestCrystal = crystal;
+      }
+    });
 
-      )
-
-  );
-
-let nearestCrystal = null;
-let shortestPath = Infinity;
-
-remainingCrystals.forEach(
-  crystal => {
-
-    const testPath =
-      findPath(
-        maze,
-        robotPos,
-        {
-          row: crystal.row,
-          col: crystal.col
-        }
-      );
-
-    if (
-      testPath.length > 0 &&
-      testPath.length < shortestPath
-    ) {
-
-      shortestPath =
-        testPath.length;
-
-      nearestCrystal =
-        crystal;
-
-    }
-
-  }
-);
-
-if (nearestCrystal) {
-
+    if (nearestCrystal) {
       target = {
+        row: nearestCrystal.row,
 
-        row:
-          nearestCrystal.row,
-
-        col:
-          nearestCrystal.col
-
+        col: nearestCrystal.col,
       };
 
-      setStatus(
-        "Menuju Crystal..."
-      );
-
+      setStatus("Menuju Crystal...");
     } else {
-
       if (!portalUnlocked) {
-
-        setStatus(
-          "Portal masih terkunci"
-        );
+        setStatus("Portal masih terkunci");
 
         return;
       }
 
       target = {
         row: 14,
-        col: 14
+        col: 14,
       };
 
-      setStatus(
-        "Menuju Portal..."
-      );
+      setStatus("Menuju Portal...");
     }
 
-    const path =
-      findPath(
-        maze,
-        robotPos,
-        target
-      );
+    const path = findPath(maze, robotPos, target);
 
-    if (
-      path.length === 0
-    ) {
-
-      setStatus(
-        "Jalur tidak ditemukan"
-      );
+    if (path.length === 0) {
+      setStatus("Jalur tidak ditemukan");
 
       return;
     }
 
-    const newMaze =
-      maze.map(
-        row => [...row]
-      );
+    const newMaze = maze.map((row) => [...row]);
 
-    path.forEach(node => {
+    path.forEach((node) => {
+      const cell = newMaze[node.row][node.col];
 
-      const cell =
-        newMaze[
-          node.row
-        ][
-          node.col
-        ];
-
-      if (
-        cell !== "goal"
-      ) {
-
-        if (
-          node.row !== robotPos.row ||
-          node.col !== robotPos.col
-        ) {
-
-          newMaze[
-            node.row
-          ][
-            node.col
-          ] = "route";
-
+      if (cell !== "goal") {
+        if (node.row !== robotPos.row || node.col !== robotPos.col) {
+          newMaze[node.row][node.col] = "route";
         }
-
       }
-
     });
 
     setMaze(newMaze);
-
-   
-
   };
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setMaze((oldMaze) => {
+        const newMaze = oldMaze.map((row) => [...row]);
 
-  const interval =
-    setInterval(() => {
+        for (let i = 0; i < 2; i++) {
+          const r = Math.floor(Math.random() * 15);
 
-      setMaze(oldMaze => {
+          const c = Math.floor(Math.random() * 15);
 
-        const newMaze =
-          oldMaze.map(
-            row => [...row]
+          if (r === robotPos.row && c === robotPos.col) continue;
+
+          if (Math.abs(r - 14) <= 1 && Math.abs(c - 14) <= 1) continue;
+
+          const isCrystal = crystals.some(
+            (crystal) => crystal.row === r && crystal.col === c,
           );
 
-        for (
-          let i = 0;
-          i < 2;
-          i++
-        ) {
+          if (isCrystal) continue;
 
-          const r =
-            Math.floor(
-              Math.random() * 15
-            );
-
-          const c =
-            Math.floor(
-              Math.random() * 15
-            );
-
-          if (
-            r === robotPos.row &&
-            c === robotPos.col
-          ) continue;
-
-          if (
-            Math.abs(r - 14) <= 1 &&
-            Math.abs(c - 14) <= 1
-          ) continue;
-
-          const isCrystal =
-            crystals.some(
-
-              crystal =>
-
-                crystal.row === r &&
-                crystal.col === c
-
-            );
-
-          if (isCrystal)
-            continue;
-
-          if (
-            newMaze[r][c] ===
-            "wall"
-          ) {
-
-            newMaze[r][c] =
-              "path";
-
+          if (newMaze[r][c] === "wall") {
+            newMaze[r][c] = "path";
           } else {
-
-            newMaze[r][c] =
-              "wall";
-
+            newMaze[r][c] = "wall";
           }
-
         }
 
         return newMaze;
-
       });
-
     }, 5000);
 
-  return () =>
-    clearInterval(
-      interval
-    );
+    return () => clearInterval(interval);
+  }, [robotPos, crystals]);
 
-}, [
-  robotPos,
-  crystals
-]); 
-
-    useEffect(() => {
-
-  const handleKeyDown =
-    (e) => {
-
+  useEffect(() => {
+    const handleKeyDown = (e) => {
       if (
-  e.key === "ArrowUp" ||
-  e.key === "ArrowDown" ||
-  e.key === "ArrowLeft" ||
-  e.key === "ArrowRight"
-) {
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+      ) {
+        e.preventDefault();
+      }
 
-  e.preventDefault();
+      if (!gameStarted || gameOver) return;
 
-}
+      let row = robotPos.row;
 
-      if (
-        !gameStarted ||
-        gameOver
-      ) return;
-
-      let row =
-        robotPos.row;
-
-      let col =
-        robotPos.col;
+      let col = robotPos.col;
 
       switch (e.key) {
-
         case "ArrowUp":
           row--;
           break;
@@ -697,272 +361,137 @@ if (nearestCrystal) {
 
         default:
           return;
-
       }
 
-      if (
-        row < 0 ||
-        col < 0 ||
-        row >= ROWS ||
-        col >= COLS
-      ) return;
+      if (row < 0 || col < 0 || row >= ROWS || col >= COLS) return;
 
-      if (
-        maze[row][col] ===
-        "wall"
-      ) {
-
+      if (maze[row][col] === "wall") {
         setGameOver(true);
 
-        setStatus(
-          "GAME OVER"
-        );
+        setStatus("GAME OVER");
 
         return;
-
       }
 
       setRobotPos({
         row,
-        col
+        col,
       });
 
-      if (
-  row === GOAL.row &&
-  col === GOAL.col
-) {
+      if (row === GOAL.row && col === GOAL.col) {
+        if (!portalUnlocked) {
+          setStatus("Kumpulkan 3 crystal terlebih dahulu!");
 
-  if (!portalUnlocked) {
+          return;
+        }
 
-    setStatus(
-      "Kumpulkan 3 crystal terlebih dahulu!"
-    );
+        setGameWin(true);
 
-    return;
+        setStatus("MISI BERHASIL!");
 
-  }
+        return;
+      }
 
-  setGameWin(true);
+      setRobotPos({
+        row,
+        col,
+      });
 
-  setStatus(
-    "MISI BERHASIL!"
-  );
-
-  return;
-
-}
-
-setRobotPos({
-  row,
-  col
-});
-
-collectCrystal(
-  row,
-  col
-);
-
+      collectCrystal(row, col);
     };
 
-  window.addEventListener(
-    "keydown",
-    handleKeyDown
-  );
+    window.addEventListener("keydown", handleKeyDown);
 
-  return () =>
-    window.removeEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-}, [
-  robotPos,
-  gameStarted,
-  gameOver,
-  maze
-]);
-    return (
-
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [robotPos, gameStarted, gameOver, maze]);
+  return (
     <div className="container">
-
-      <h1>
-        🤖 Misi Pelarian Robot
-      </h1>
+      <h1>🤖 Misi Pelarian Robot</h1>
 
       <p className="subtitle">
         Sistem Navigasi Robot Cerdas pada Labirin Dinamis
       </p>
 
       <div className="control-panel">
-
-        <button
-          className="btn"
-          onClick={generateMaze}
-        >
+        <button className="btn" onClick={generateMaze}>
           Buat Labirin
         </button>
 
-        <button
-          className="btn"
-          onClick={searchPath}
-        >
+        <button className="btn" onClick={searchPath}>
           Cari Jalur AI
         </button>
 
-        <button
-  className="btn"
-  onClick={() =>
-    setGameStarted(true)
-  }
->
-  Mulai Game
-</button>
-
+        <button className="btn" onClick={() => setGameStarted(true)}>
+          Mulai Game
+        </button>
       </div>
 
       <div className="info-panels">
+        <div className="status-panel">
+          <h3>AI STATUS</h3>
 
-  <div className="status-panel">
+          <p>{status}</p>
 
-    <h3>AI STATUS</h3>
+          <p>
+            Position : ({robotPos.row},{robotPos.col})
+          </p>
 
-    <p>{status}</p>
+          <p>
+            Crystal :{collectedCrystals.length}/{crystals.length}
+          </p>
 
-    <p>
-      Position :
-      ({robotPos.row},
-      {robotPos.col})
-    </p>
+          <p>Portal :{portalUnlocked ? " 🟢 UNLOCKED" : " 🔴 LOCKED"}</p>
+        </div>
 
-    <p>
-      Crystal :
-      {collectedCrystals.length}
-      /
-      {crystals.length}
-    </p>
+        <div className="crystal-panel">
+          <h3>ENERGY CRYSTAL</h3>
 
-    <p>
-      Portal :
-      {
-        portalUnlocked
-          ? " 🟢 UNLOCKED"
-          : " 🔴 LOCKED"
-      }
-    </p>
-
-  </div>
-
-  <div className="crystal-panel">
-
-    <h3>ENERGY CRYSTAL</h3>
-
-    {
-      crystals.map(
-        (crystal,index)=>{
-
-          const collected =
-            collectedCrystals.some(
-              c =>
-                c.row === crystal.row &&
-                c.col === crystal.col
+          {crystals.map((crystal, index) => {
+            const collected = collectedCrystals.some(
+              (c) => c.row === crystal.row && c.col === crystal.col,
             );
 
-          return (
+            return (
+              <p key={index}>
+                {collected ? "✅" : "⬜"} Crystal {index + 1}
+              </p>
+            );
+          })}
+        </div>
+      </div>
+      {gameOver && (
+        <div className="game-over">
+          <h1>GAME OVER</h1>
 
-            <p key={index}>
+          <button
+            className="btn"
+            onClick={() => {
+              setGameOver(false);
 
-              {
-                collected
-                  ? "✅"
-                  : "⬜"
-              }
+              generateMaze();
+            }}
+          >
+            RESTART GAME
+          </button>
+        </div>
+      )}
+      {gameWin && (
+        <div className="game-win">
+          <h1>YOU WIN</h1>
 
-              {" "}
-              Crystal {index+1}
-
-            </p>
-
-          );
-
-        }
-      )
-    }
-
-  </div>
-
-</div>
-      {
-  gameOver && (
-
-    <div
-      className="game-over"
-    >
-
-      <h1>
-        GAME OVER
-      </h1>
-
-      <button
-        className="btn"
-        onClick={() => {
-
-          setGameOver(
-            false
-          );
-
-          generateMaze();
-
-        }}
-      >
-        RESTART GAME
-      </button>
-
-    </div>
-
-  )
-}
-      {
-  gameWin && (
-
-    <div
-      className="game-win"
-    >
-
-      <h1>
-         YOU WIN
-      </h1>
-
-      <button
-        className="btn"
-        onClick={
-          generateMaze
-        }
-      >
-        MAIN LAGI
-      </button>
-
-    </div>
-
-  )
-}
+          <button className="btn" onClick={generateMaze}>
+            MAIN LAGI
+          </button>
+        </div>
+      )}
       <Maze
-
         maze={maze}
-
         robotPos={robotPos}
-
         crystals={crystals}
-
-        collectedCrystals={
-          collectedCrystals
-        }
-
+        collectedCrystals={collectedCrystals}
       />
-
     </div>
-
   );
-
 }
 
 export default App;
