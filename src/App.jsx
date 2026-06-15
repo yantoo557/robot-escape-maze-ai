@@ -406,7 +406,7 @@ function App() {
   }, [robotPos, gameStarted, gameOver, maze]);
   return (
     <div className="container">
-      <h1>🤖 Misi Pelarian Robot</h1>
+      <h1>Misi Pelarian Robot</h1>
 
       <p className="subtitle">
         Sistem Navigasi Robot Cerdas pada Labirin Dinamis
