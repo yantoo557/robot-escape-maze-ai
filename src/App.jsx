@@ -25,7 +25,7 @@ function App() {
       const row = [];
 
       for (let c = 0; c < COLS; c++) {
-        row.push(Math.random() < 0.9 ? "wall" : "path");
+        row.push(Math.random() < 0.2 ? "wall" : "path");
       }
 
       maze.push(row);
