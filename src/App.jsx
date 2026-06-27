@@ -446,17 +446,22 @@ function App() {
         <div className="crystal-panel">
           <h3>ENERGY CRYSTAL</h3>
 
-          {crystals.map((crystal, index) => {
-            const collected = collectedCrystals.some(
-              (c) => c.row === crystal.row && c.col === crystal.col,
-            );
+          {[1, 2, 3].map((number, index) => (
 
-            return (
-              <p key={index}>
-                {collected ? "✅" : "⬜"} Crystal {index + 1}
-              </p>
-            );
-          })}
+  <p key={index}>
+
+    {
+      collectedCrystals.length > index
+        ? "✅"
+        : "⬜"
+    }
+
+    {" "}
+    Crystal {number}
+
+  </p>
+
+))}
         </div>
       </div>
       {gameOver && (

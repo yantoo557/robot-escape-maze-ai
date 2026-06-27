@@ -5,7 +5,7 @@ export function findPath(maze, start, goal) {
 
     const open = [];
     const closed = new Set();
-
+ 
     const heuristic = (row, col) => {
 
         return (
